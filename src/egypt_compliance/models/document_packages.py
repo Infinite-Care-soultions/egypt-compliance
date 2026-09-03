@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 import json
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_serializer, field_validator
@@ -172,4 +173,25 @@ class PackageRequestsResult(BaseModel):
 
     def __len__(self) -> int:
         return len(self.result)
+
+
+class DocumentPackageDownload(BaseModel):
+    """ZIP bytes when the package is ready; `ready` is False on HTTP 204."""
+
+    package_id: str
+    ready: bool = False
+    content: bytes | None = None
+    content_type: str | None = None
+    content_length: int | None = None
+
+    @property
+    def size(self) -> int:
+        return 0 if self.content is None else len(self.content)
+
+    def save(self, path: str | Path) -> Path:
+        if not self.ready or self.content is None:
+            raise ValueError("package is not ready to download")
+        destination = Path(path)
+        destination.write_bytes(self.content)
+        return destination
 

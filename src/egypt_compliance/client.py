@@ -8,6 +8,7 @@ import httpx
 from egypt_compliance.config import ETAConfig
 from egypt_compliance.exceptions import ETAAPIError, ETAAuthenticationError, ETAError
 from egypt_compliance.models.document_packages import (
+    DocumentPackageDownload,
     DocumentPackageItemCode,
     DocumentPackageQueryParameters,
     PackageRequestsQuery,
@@ -635,6 +636,46 @@ class ETAClient:
             payload = {"result": payload}
         return PackageRequestsResult.model_validate(payload)
 
+    def get_document_package(
+        self,
+        token: Token | str,
+        package_id: str,
+        *,
+        byte_range: str | None = None,
+        accept_language: str = "en",
+    ) -> DocumentPackageDownload:
+        if not package_id or not str(package_id).strip():
+            raise ValueError("package_id is required")
+        package_id = str(package_id).strip()
+        extra_headers: dict[str, str] = {}
+        if byte_range:
+            extra_headers["Range"] = byte_range
+        response = self._request_raw(
+            "GET",
+            self.config.document_package_url(package_id),
+            token=token,
+            accept_language=accept_language,
+            accept="application/octet-stream",
+            extra_headers=extra_headers or None,
+            ok_statuses=(200, 204, 206),
+        )
+        if response.status_code == 204 or not response.content:
+            return DocumentPackageDownload(package_id=package_id, ready=False)
+        content_length_header = response.headers.get("Content-Length")
+        content_length = None
+        if content_length_header:
+            try:
+                content_length = int(content_length_header)
+            except ValueError:
+                content_length = None
+        return DocumentPackageDownload(
+            package_id=package_id,
+            ready=True,
+            content=response.content,
+            content_type=response.headers.get("Content-Type"),
+            content_length=content_length,
+        )
+
     def close(self) -> None:
         if self._owns_client and self._http is not None:
             self._http.close()
@@ -664,25 +705,29 @@ class ETAClient:
             headers["onbehalfof"] = credentials.on_behalf_of
         return headers
 
-    def _request_json(
+    def _request_raw(
         self,
         method: str,
         url: str,
         *,
         token: Token | str,
         accept_language: str = "en",
+        accept: str = "application/json",
         params: dict[str, str] | None = None,
         json: object | None = None,
+        extra_headers: dict[str, str] | None = None,
         ok_statuses: tuple[int, ...] = (200,),
-    ) -> object:
+    ) -> httpx.Response:
         access_token = token.access_token if isinstance(token, Token) else token
         headers = {
             "Authorization": f"Bearer {access_token}",
-            "Accept": "application/json",
+            "Accept": accept,
             "Accept-Language": accept_language,
         }
         if json is not None:
             headers["Content-Type"] = "application/json"
+        if extra_headers:
+            headers.update(extra_headers)
         try:
             response = self._client().request(
                 method,
@@ -698,6 +743,28 @@ class ETAClient:
             raise self._authentication_error(response)
         if response.status_code not in ok_statuses:
             raise self._api_error(response)
+        return response
+
+    def _request_json(
+        self,
+        method: str,
+        url: str,
+        *,
+        token: Token | str,
+        accept_language: str = "en",
+        params: dict[str, str] | None = None,
+        json: object | None = None,
+        ok_statuses: tuple[int, ...] = (200,),
+    ) -> object:
+        response = self._request_raw(
+            method,
+            url,
+            token=token,
+            accept_language=accept_language,
+            params=params,
+            json=json,
+            ok_statuses=ok_statuses,
+        )
         if not response.content:
             return None
         try:

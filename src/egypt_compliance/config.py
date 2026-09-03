@@ -74,6 +74,9 @@ class ETAConfig(BaseModel):
     def document_package_requests_url(self) -> str:
         return self.api_url("/api/v1.0/documentpackages/requests")
 
+    def document_package_url(self, package_id: str) -> str:
+        return self.api_url(f"/api/v1.0/documentpackages/{quote(package_id, safe='-._~')}")
+
 
 PREPROD = ETAConfig(
     environment=Environment.PREPROD,

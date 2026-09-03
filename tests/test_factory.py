@@ -51,6 +51,9 @@ def test_factory_create_preprod_uses_identity_and_api_urls():
     assert client.config.document_package_requests_url == (
         "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentpackages/requests"
     )
+    assert client.config.document_package_url("45KJHHA62D") == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentpackages/45KJHHA62D"
+    )
 
 
 def test_factory_create_prod_uses_identity_and_api_urls():
@@ -100,6 +103,9 @@ def test_factory_create_prod_uses_identity_and_api_urls():
     )
     assert client.config.document_package_requests_url == (
         "https://api.invoicing.eta.gov.eg/api/v1.0/documentpackages/requests"
+    )
+    assert client.config.document_package_url("45KJHHA62D") == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documentpackages/45KJHHA62D"
     )
 
 

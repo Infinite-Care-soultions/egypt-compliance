@@ -24,6 +24,7 @@ from egypt_compliance.invoices import (
     UnitValue,
 )
 from egypt_compliance.models.document_packages import (
+    DocumentPackageDownload,
     DocumentPackageInformation,
     DocumentPackageItemCode,
     DocumentPackageQueryParameters,
@@ -112,6 +113,7 @@ __all__ = [
     "Delivery",
     "DeliveryAttempt",
     "Discount",
+    "DocumentPackageDownload",
     "DocumentPackageInformation",
     "DocumentPackageItemCode",
     "DocumentPackageQueryParameters",

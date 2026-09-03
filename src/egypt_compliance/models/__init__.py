@@ -1,4 +1,5 @@
 from egypt_compliance.models.document_packages import (
+    DocumentPackageDownload,
     DocumentPackageInformation,
     DocumentPackageItemCode,
     DocumentPackageQueryParameters,
@@ -75,6 +76,7 @@ __all__ = [
     "CreateEGSCodeUsageRequest",
     "CreateEGSCodeUsageResult",
     "DeliveryAttempt",
+    "DocumentPackageDownload",
     "DocumentPackageInformation",
     "DocumentPackageItemCode",
     "DocumentPackageQueryParameters",

@@ -30,7 +30,7 @@ for package in packages:
 `type`: `1` full, `2` summary.  
 `format`: `1` CSV, `2` XML, `3` JSON.
 
-Download only when `status == 2` and `is_expired` is not true. `deletion_date` is when ETA plans to remove a completed package.
+Download only when `status == 2` and `is_expired` is not true. `deletion_date` is when ETA plans to remove a completed package. Then call [`get_document_package()`](document-package.md).
 
 ```python
 ready = [pkg for pkg in packages if pkg.status == 2 and not pkg.is_expired]
