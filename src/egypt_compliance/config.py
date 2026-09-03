@@ -55,6 +55,37 @@ class ETAConfig(BaseModel):
     def update_code_url(self, code_type: str, item_code: str) -> str:
         return self.code_details_url(code_type, item_code)
 
+    @property
+    def document_submissions_url(self) -> str:
+        return self.api_url("/api/v1.0/documentsubmissions")
+
+    def document_submission_url(self, uuid: str) -> str:
+        return self.api_url(f"/api/v1.0/documentsubmissions/{quote(uuid, safe='-._~')}")
+
+    def document_state_url(self, uuid: str) -> str:
+        return self.api_url(f"/api/v1.0/documents/state/{quote(uuid, safe='-._~')}/state")
+
+    @property
+    def recent_documents_url(self) -> str:
+        return self.api_url("/api/v1.0/documents/recent")
+
+    @property
+    def search_documents_url(self) -> str:
+        return self.api_url("/api/v1.0/documents/search")
+
+    @property
+    def document_package_requests_url(self) -> str:
+        return self.api_url("/api/v1.0/documentpackages/requests")
+
+    def document_package_url(self, package_id: str) -> str:
+        return self.api_url(f"/api/v1.0/documentpackages/{quote(package_id, safe='-._~')}")
+
+    def document_raw_url(self, uuid: str) -> str:
+        return self.api_url(f"/api/v1.0/documents/{quote(uuid, safe='-._~')}/raw")
+
+    def document_pdf_url(self, uuid: str) -> str:
+        return self.api_url(f"/api/v1.0/documents/{quote(uuid, safe='-._~')}/pdf")
+
 
 PREPROD = ETAConfig(
     environment=Environment.PREPROD,

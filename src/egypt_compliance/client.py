@@ -7,10 +7,29 @@ import httpx
 
 from egypt_compliance.config import ETAConfig
 from egypt_compliance.exceptions import ETAAPIError, ETAAuthenticationError, ETAError
+from egypt_compliance.models.document_detail import DocumentExtended, DocumentPrintout
+from egypt_compliance.models.document_packages import (
+    DocumentPackageDownload,
+    DocumentPackageItemCode,
+    DocumentPackageQueryParameters,
+    PackageRequestsQuery,
+    PackageRequestsResult,
+    RequestDocumentPackageRequest,
+    RequestDocumentPackageResult,
+)
 from egypt_compliance.models.document_types import (
     DocumentType,
     DocumentTypesResult,
     DocumentTypeVersionDetail,
+)
+from egypt_compliance.models.documents import (
+    CancelDocumentRequest,
+    CancelDocumentResult,
+    RejectDocumentRequest,
+    RejectDocumentResult,
+    SubmitDocumentsRequest,
+    SubmitDocumentsResult,
+    SubmittedDocument,
 )
 from egypt_compliance.models.egs_codes import (
     CodeReuseItem,
@@ -33,6 +52,15 @@ from egypt_compliance.models.notifications import (
     NotificationsResult,
     NotificationType,
 )
+from egypt_compliance.models.recent_documents import (
+    RecentDocumentsQuery,
+    RecentDocumentsResult,
+)
+from egypt_compliance.models.search_documents import (
+    SearchDocumentsQuery,
+    SearchDocumentsResult,
+)
+from egypt_compliance.models.submission import GetSubmissionQuery, GetSubmissionResult
 from egypt_compliance.models.token import LoginCredentials, Token
 
 
@@ -325,6 +353,418 @@ class ETAClient:
             return UpdateCodeResult(success=True, payload=payload)
         return UpdateCodeResult(success=True)
 
+    def submit_documents(
+        self,
+        token: Token | str,
+        documents: list[SubmittedDocument | dict] | SubmitDocumentsRequest,
+        *,
+        accept_language: str = "en",
+    ) -> SubmitDocumentsResult:
+        if isinstance(documents, SubmitDocumentsRequest):
+            if not documents.documents:
+                raise ValueError("documents must contain at least one document")
+            body = documents.as_api_body()
+        else:
+            if not documents:
+                raise ValueError("documents must contain at least one document")
+            body = {
+                "documents": [
+                    document.model_dump(by_alias=True, exclude_none=True, mode="json")
+                    if isinstance(document, SubmittedDocument)
+                    else document
+                    for document in documents
+                ]
+            }
+        payload = self._request_json(
+            "POST",
+            self.config.document_submissions_url,
+            token=token,
+            accept_language=accept_language,
+            json=body,
+            ok_statuses=(200, 202),
+        )
+        if payload is None:
+            return SubmitDocumentsResult()
+        return SubmitDocumentsResult.model_validate(payload)
+
+    def cancel_document(
+        self,
+        token: Token | str,
+        uuid: str,
+        reason: str | CancelDocumentRequest,
+        *,
+        status: str = "cancelled",
+        accept_language: str = "en",
+    ) -> CancelDocumentResult:
+        request = (
+            reason
+            if isinstance(reason, CancelDocumentRequest)
+            else CancelDocumentRequest(status=status, reason=reason)
+        )
+        if not uuid or not str(uuid).strip():
+            raise ValueError("uuid is required")
+        if not request.reason or not request.reason.strip():
+            raise ValueError("reason is required")
+        payload = self._request_json(
+            "PUT",
+            self.config.document_state_url(str(uuid).strip()),
+            token=token,
+            accept_language=accept_language,
+            json=request.as_api_body(),
+        )
+        if payload is None:
+            return CancelDocumentResult(success=True)
+        if isinstance(payload, (dict, list)):
+            return CancelDocumentResult(success=True, payload=payload)
+        return CancelDocumentResult(success=True)
+
+    def reject_document(
+        self,
+        token: Token | str,
+        uuid: str,
+        reason: str | RejectDocumentRequest,
+        *,
+        status: str = "rejected",
+        accept_language: str = "en",
+    ) -> RejectDocumentResult:
+        request = (
+            reason
+            if isinstance(reason, RejectDocumentRequest)
+            else RejectDocumentRequest(status=status, reason=reason)
+        )
+        if not uuid or not str(uuid).strip():
+            raise ValueError("uuid is required")
+        if not request.reason or not request.reason.strip():
+            raise ValueError("reason is required")
+        payload = self._request_json(
+            "PUT",
+            self.config.document_state_url(str(uuid).strip()),
+            token=token,
+            accept_language=accept_language,
+            json=request.as_api_body(),
+        )
+        if payload is None:
+            return RejectDocumentResult(success=True)
+        if isinstance(payload, (dict, list)):
+            return RejectDocumentResult(success=True, payload=payload)
+        return RejectDocumentResult(success=True)
+
+    def get_recent_documents(
+        self,
+        token: Token | str,
+        query: RecentDocumentsQuery | None = None,
+        *,
+        page_no: int | None = None,
+        page_size: int | None = None,
+        submission_date_from: datetime | str | None = None,
+        submission_date_to: datetime | str | None = None,
+        issue_date_from: datetime | str | None = None,
+        issue_date_to: datetime | str | None = None,
+        direction: str | None = None,
+        status: str | None = None,
+        document_type: str | None = None,
+        receiver_type: str | None = None,
+        receiver_id: str | None = None,
+        issuer_type: str | None = None,
+        issuer_id: str | None = None,
+        accept_language: str = "en",
+    ) -> RecentDocumentsResult:
+        filters = query or RecentDocumentsQuery(
+            page_no=page_no,
+            page_size=page_size,
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_type=receiver_type,
+            receiver_id=receiver_id,
+            issuer_type=issuer_type,
+            issuer_id=issuer_id,
+        )
+        payload = self._request_json(
+            "GET",
+            self.config.recent_documents_url,
+            token=token,
+            accept_language=accept_language,
+            params=filters.as_query_params(),
+        )
+        if payload is None:
+            payload = {"result": []}
+        if isinstance(payload, list):
+            payload = {"result": payload}
+        return RecentDocumentsResult.model_validate(payload)
+
+    def search_documents(
+        self,
+        token: Token | str,
+        query: SearchDocumentsQuery | None = None,
+        *,
+        submission_date_from: datetime | str | None = None,
+        submission_date_to: datetime | str | None = None,
+        issue_date_from: datetime | str | None = None,
+        issue_date_to: datetime | str | None = None,
+        continuation_token: str | None = None,
+        page_size: int | None = None,
+        direction: str | None = None,
+        status: str | None = None,
+        document_type: str | None = None,
+        receiver_type: str | None = None,
+        receiver_id: str | None = None,
+        issuer_type: str | None = None,
+        issuer_id: str | None = None,
+        uuid: str | None = None,
+        internal_id: str | None = None,
+        accept_language: str = "en",
+    ) -> SearchDocumentsResult:
+        filters = query or SearchDocumentsQuery(
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            continuation_token=continuation_token,
+            page_size=page_size,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_type=receiver_type,
+            receiver_id=receiver_id,
+            issuer_type=issuer_type,
+            issuer_id=issuer_id,
+            uuid=uuid,
+            internal_id=internal_id,
+        )
+        payload = self._request_json(
+            "GET",
+            self.config.search_documents_url,
+            token=token,
+            accept_language=accept_language,
+            params=filters.as_query_params(),
+        )
+        if payload is None:
+            payload = {"result": []}
+        if isinstance(payload, list):
+            payload = {"result": payload}
+        return SearchDocumentsResult.model_validate(payload)
+
+    def request_document_package(
+        self,
+        token: Token | str,
+        request: RequestDocumentPackageRequest | None = None,
+        *,
+        type: str = "full",
+        format: str = "JSON",
+        query_parameters: DocumentPackageQueryParameters | None = None,
+        date_from: datetime | str | None = None,
+        date_to: datetime | str | None = None,
+        document_type_names: list[str] | None = None,
+        statuses: list[str] | None = None,
+        products_internal_codes: list[str] | None = None,
+        receiver_sender_type: str | int | None = None,
+        receiver_sender_id: str | None = None,
+        branch_number: str | None = None,
+        item_codes: list[DocumentPackageItemCode] | None = None,
+        truncate_if_exceeded: bool | None = None,
+        represented_taxpayer_filter_type: int | None = None,
+        representee_rin: str | None = None,
+        accept_language: str = "en",
+    ) -> RequestDocumentPackageResult:
+        if request is None:
+            query = query_parameters or DocumentPackageQueryParameters(
+                date_from=date_from,
+                date_to=date_to,
+                document_type_names=document_type_names,
+                statuses=statuses,
+                products_internal_codes=products_internal_codes,
+                receiver_sender_type=receiver_sender_type,
+                receiver_sender_id=receiver_sender_id,
+                branch_number=branch_number,
+                item_codes=item_codes,
+                truncate_if_exceeded=truncate_if_exceeded,
+            )
+            request = RequestDocumentPackageRequest(
+                type=type,
+                format=format,
+                query_parameters=query,
+                represented_taxpayer_filter_type=represented_taxpayer_filter_type,
+                representee_rin=representee_rin,
+            )
+        if not request.query_parameters.date_from or not request.query_parameters.date_to:
+            raise ValueError("date_from and date_to are required")
+        payload = self._request_json(
+            "POST",
+            self.config.document_package_requests_url,
+            token=token,
+            accept_language=accept_language,
+            json=request.as_api_body(),
+            ok_statuses=(200, 201),
+        )
+        if payload is None:
+            return RequestDocumentPackageResult()
+        if isinstance(payload, str):
+            return RequestDocumentPackageResult(package_id=payload)
+        if isinstance(payload, dict):
+            inner = payload.get("result")
+            if "packageId" not in payload and "packageID" not in payload and "package_id" not in payload:
+                if isinstance(inner, dict):
+                    payload = inner
+                elif isinstance(inner, str):
+                    return RequestDocumentPackageResult(package_id=inner)
+            return RequestDocumentPackageResult.model_validate(payload)
+        return RequestDocumentPackageResult()
+
+    def get_package_requests(
+        self,
+        token: Token | str,
+        query: PackageRequestsQuery | None = None,
+        *,
+        page_no: int | None = None,
+        page_size: int | None = None,
+        accept_language: str = "en",
+    ) -> PackageRequestsResult:
+        filters = query or PackageRequestsQuery(page_no=page_no, page_size=page_size)
+        payload = self._request_json(
+            "GET",
+            self.config.document_package_requests_url,
+            token=token,
+            accept_language=accept_language,
+            params=filters.as_query_params(),
+        )
+        if payload is None:
+            payload = {"result": []}
+        if isinstance(payload, list):
+            payload = {"result": payload}
+        return PackageRequestsResult.model_validate(payload)
+
+    def get_document_package(
+        self,
+        token: Token | str,
+        package_id: str,
+        *,
+        byte_range: str | None = None,
+        accept_language: str = "en",
+    ) -> DocumentPackageDownload:
+        if not package_id or not str(package_id).strip():
+            raise ValueError("package_id is required")
+        package_id = str(package_id).strip()
+        extra_headers: dict[str, str] = {}
+        if byte_range:
+            extra_headers["Range"] = byte_range
+        response = self._request_raw(
+            "GET",
+            self.config.document_package_url(package_id),
+            token=token,
+            accept_language=accept_language,
+            accept="application/octet-stream",
+            extra_headers=extra_headers or None,
+            ok_statuses=(200, 204, 206),
+        )
+        if response.status_code == 204 or not response.content:
+            return DocumentPackageDownload(package_id=package_id, ready=False)
+        content_length_header = response.headers.get("Content-Length")
+        content_length = None
+        if content_length_header:
+            try:
+                content_length = int(content_length_header)
+            except ValueError:
+                content_length = None
+        return DocumentPackageDownload(
+            package_id=package_id,
+            ready=True,
+            content=response.content,
+            content_type=response.headers.get("Content-Type"),
+            content_length=content_length,
+        )
+
+    def get_document(
+        self,
+        token: Token | str,
+        uuid: str,
+        *,
+        accept_language: str = "en",
+    ) -> DocumentExtended:
+        if not uuid or not str(uuid).strip():
+            raise ValueError("uuid is required")
+        payload = self._request_json(
+            "GET",
+            self.config.document_raw_url(str(uuid).strip()),
+            token=token,
+            accept_language=accept_language,
+        )
+        if payload is None:
+            return DocumentExtended()
+        if (
+            isinstance(payload, dict)
+            and "uuid" not in payload
+            and isinstance(payload.get("result"), dict)
+        ):
+            payload = payload["result"]
+        return DocumentExtended.model_validate(payload)
+
+    def get_submission(
+        self,
+        token: Token | str,
+        uuid: str,
+        query: GetSubmissionQuery | None = None,
+        *,
+        page_no: int | None = None,
+        page_size: int | None = None,
+        accept_language: str = "en",
+    ) -> GetSubmissionResult:
+        if not uuid or not str(uuid).strip():
+            raise ValueError("uuid is required")
+        filters = query or GetSubmissionQuery(page_no=page_no, page_size=page_size)
+        payload = self._request_json(
+            "GET",
+            self.config.document_submission_url(str(uuid).strip()),
+            token=token,
+            accept_language=accept_language,
+            params=filters.as_query_params(),
+        )
+        if payload is None:
+            return GetSubmissionResult()
+        if (
+            isinstance(payload, dict)
+            and "uuid" not in payload
+            and isinstance(payload.get("result"), dict)
+        ):
+            payload = payload["result"]
+        return GetSubmissionResult.model_validate(payload)
+
+    def get_document_printout(
+        self,
+        token: Token | str,
+        uuid: str,
+        *,
+        accept_language: str = "en",
+    ) -> DocumentPrintout:
+        if not uuid or not str(uuid).strip():
+            raise ValueError("uuid is required")
+        uuid = str(uuid).strip()
+        response = self._request_raw(
+            "GET",
+            self.config.document_pdf_url(uuid),
+            token=token,
+            accept_language=accept_language,
+            accept="application/pdf",
+            ok_statuses=(200,),
+        )
+        content_length_header = response.headers.get("Content-Length")
+        content_length = None
+        if content_length_header:
+            try:
+                content_length = int(content_length_header)
+            except ValueError:
+                content_length = None
+        return DocumentPrintout(
+            uuid=uuid,
+            content=response.content,
+            content_type=response.headers.get("Content-Type"),
+            content_length=content_length,
+        )
+
     def close(self) -> None:
         if self._owns_client and self._http is not None:
             self._http.close()
@@ -354,24 +794,29 @@ class ETAClient:
             headers["onbehalfof"] = credentials.on_behalf_of
         return headers
 
-    def _request_json(
+    def _request_raw(
         self,
         method: str,
         url: str,
         *,
         token: Token | str,
         accept_language: str = "en",
+        accept: str = "application/json",
         params: dict[str, str] | None = None,
         json: object | None = None,
-    ) -> object:
+        extra_headers: dict[str, str] | None = None,
+        ok_statuses: tuple[int, ...] = (200,),
+    ) -> httpx.Response:
         access_token = token.access_token if isinstance(token, Token) else token
         headers = {
             "Authorization": f"Bearer {access_token}",
-            "Accept": "application/json",
+            "Accept": accept,
             "Accept-Language": accept_language,
         }
         if json is not None:
             headers["Content-Type"] = "application/json"
+        if extra_headers:
+            headers.update(extra_headers)
         try:
             response = self._client().request(
                 method,
@@ -385,8 +830,30 @@ class ETAClient:
 
         if response.status_code == 401:
             raise self._authentication_error(response)
-        if response.status_code != 200:
+        if response.status_code not in ok_statuses:
             raise self._api_error(response)
+        return response
+
+    def _request_json(
+        self,
+        method: str,
+        url: str,
+        *,
+        token: Token | str,
+        accept_language: str = "en",
+        params: dict[str, str] | None = None,
+        json: object | None = None,
+        ok_statuses: tuple[int, ...] = (200,),
+    ) -> object:
+        response = self._request_raw(
+            method,
+            url,
+            token=token,
+            accept_language=accept_language,
+            params=params,
+            json=json,
+            ok_statuses=ok_statuses,
+        )
         if not response.content:
             return None
         try:

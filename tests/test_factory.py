@@ -36,6 +36,33 @@ def test_factory_create_preprod_uses_identity_and_api_urls():
     assert client.config.update_code_url("EGS", "EG-113317713-1234") == (
         "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/codetypes/EGS/codes/EG-113317713-1234"
     )
+    assert client.config.document_submissions_url == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentsubmissions"
+    )
+    assert client.config.document_state_url("F9D425P6DS7D8IU") == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/state/F9D425P6DS7D8IU/state"
+    )
+    assert client.config.recent_documents_url == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/recent"
+    )
+    assert client.config.search_documents_url == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/search"
+    )
+    assert client.config.document_package_requests_url == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentpackages/requests"
+    )
+    assert client.config.document_package_url("45KJHHA62D") == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentpackages/45KJHHA62D"
+    )
+    assert client.config.document_raw_url("F9D425P6DS7D8IU") == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/F9D425P6DS7D8IU/raw"
+    )
+    assert client.config.document_pdf_url("SG4SSD5KJHHA62D") == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/SG4SSD5KJHHA62D/pdf"
+    )
+    assert client.config.document_submission_url("HJSD135P2S7D8IU") == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentsubmissions/HJSD135P2S7D8IU"
+    )
 
 
 def test_factory_create_prod_uses_identity_and_api_urls():
@@ -70,6 +97,33 @@ def test_factory_create_prod_uses_identity_and_api_urls():
     )
     assert client.config.update_code_url("EGS", "EG-113317713-1234") == (
         "https://api.invoicing.eta.gov.eg/api/v1.0/codetypes/EGS/codes/EG-113317713-1234"
+    )
+    assert client.config.document_submissions_url == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documentsubmissions"
+    )
+    assert client.config.document_state_url("F9D425P6DS7D8IU") == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documents/state/F9D425P6DS7D8IU/state"
+    )
+    assert client.config.recent_documents_url == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documents/recent"
+    )
+    assert client.config.search_documents_url == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documents/search"
+    )
+    assert client.config.document_package_requests_url == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documentpackages/requests"
+    )
+    assert client.config.document_package_url("45KJHHA62D") == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documentpackages/45KJHHA62D"
+    )
+    assert client.config.document_raw_url("F9D425P6DS7D8IU") == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documents/F9D425P6DS7D8IU/raw"
+    )
+    assert client.config.document_pdf_url("SG4SSD5KJHHA62D") == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documents/SG4SSD5KJHHA62D/pdf"
+    )
+    assert client.config.document_submission_url("HJSD135P2S7D8IU") == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documentsubmissions/HJSD135P2S7D8IU"
     )
 
 

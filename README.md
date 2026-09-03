@@ -2,7 +2,7 @@
 
 Python SDK for Egyptian Tax Authority (ETA) eInvoicing integration.
 
-Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**.
+Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, **CAdES-BES signatures**, **cancel document**, **reject document**, **get recent documents**, **search documents**, **request document package**, **get package requests**, **get document package**, **get document**, **get submission**, and **get document printout**.
 
 ## Install
 
@@ -208,6 +208,246 @@ result = client.update_code(
     linked_code="EG-674859545-9875",
 )
 print(result.success)
+```
+
+## Invoice documents
+
+Build typed invoice JSON (`to_json()`), sign it, then pass it to `submit_documents()`. Full walkthrough: [docs/invoices.md](docs/invoices.md).
+
+| Class | `documentType` |
+| --- | --- |
+| `Invoice` | `i` |
+| `CreditNote` | `c` |
+| `DebitNote` | `d` |
+| `ExportInvoice` | `ei` |
+| `ExportCreditNote` | `ec` |
+| `ExportDebitNote` | `ed` |
+
+```python
+from datetime import datetime, timezone
+from egypt_compliance import Address, Invoice, InvoiceLine, Issuer, Receiver, UnitValue
+
+invoice = Invoice(
+    issuer=Issuer(
+        id="100015840",
+        name="Issuer Co",
+        address=Address(
+            branch_id="0",
+            country="EG",
+            governate="Cairo",
+            region_city="Nasr City",
+            street="Street 1",
+            building_number="10",
+        ),
+    ),
+    receiver=Receiver(
+        type="B",
+        id="200015840",
+        name="Buyer Co",
+        address=Address(
+            country="EG",
+            governate="Giza",
+            region_city="Dokki",
+            street="Street 2",
+            building_number="17",
+        ),
+    ),
+    date_time_issued=datetime(2024, 2, 13, 13, 15, tzinfo=timezone.utc),
+    taxpayer_activity_code="4620",
+    internal_id="INV-1",
+    invoice_lines=[
+        InvoiceLine(
+            description="Bottle of water",
+            item_type="EGS",
+            item_code="EG-100015840-1",
+            unit_type="EA",
+            quantity=1,
+            unit_value=UnitValue(amount_egp=100),
+            sales_total=100,
+            total=114,
+            net_total=100,
+        )
+    ],
+    total_sales_amount=100,
+    net_amount=100,
+    total_amount=114,
+)
+payload = invoice.to_json()
+```
+
+`InvoiceFactory.create("invoice"|"credit_note"|"debit_note"|"export_invoice"|...)` builds the same models.
+
+## Sign documents
+
+Canonicalize invoice JSON and create a Base64 CAdES-BES value. Full walkthrough: [docs/signing.md](docs/signing.md).
+
+```python
+from egypt_compliance import SignatureFactory
+
+signer = SignatureFactory.create("pem", certificate="cert.pem", private_key="key.pem")
+# Production USB token:
+# signer = SignatureFactory.create("pkcs11", pin="12345678", library="eps2003csp11.dll")
+
+result = signer.sign_file("invoice.json")  # or signer.sign_document(invoice.to_json())
+print(result.canonical)
+print(result.signature)
+client.submit_documents(token, result.submission["documents"])
+```
+
+## Submit documents
+
+Requires a token from `login()` and signed document JSON (CAdES-BES). Calls `POST /api/v1.0/documentsubmissions`. HTTP **200** and **202** are both success.
+
+Build JSON with the invoice modules, sign with `SignatureFactory`, then submit. Walkthroughs: [docs/invoices.md](docs/invoices.md), [docs/signing.md](docs/signing.md), [docs/submit-documents.md](docs/submit-documents.md).
+
+```python
+result = client.submit_documents(
+    token,
+    [
+        {
+            "documentType": "i",
+            "documentTypeVersion": "1.0",
+            "internalID": "PZ-234-A",
+            "signatures": [{"type": "I", "value": "<cades-bes-base64>"}],
+            # issuer, receiver, invoiceLines, totals, ...
+        }
+    ],
+)
+print(result.submission_uuid)
+for accepted in result.accepted_documents:
+    print(accepted.internal_id, accepted.uuid, accepted.long_id)
+for rejected in result.rejected_documents:
+    print(rejected.internal_id, rejected.error.message)
+```
+
+## Cancel document
+
+Requires a token from `login()` and the ETA document `uuid` from submit. Calls `PUT /api/v1.0/documents/state/{uuid}/state`. Full walkthrough: [docs/cancel-document.md](docs/cancel-document.md).
+
+```python
+result = client.cancel_document(token, "F9D425P6DS7D8IU", "Wrong invoice details")
+print(result.success)
+```
+
+## Reject document
+
+Requires a token from `login()`. The **recipient** rejects a received document by ETA `uuid`. Calls `PUT /api/v1.0/documents/state/{uuid}/state` with `status: rejected`. Full walkthrough: [docs/reject-document.md](docs/reject-document.md).
+
+```python
+result = client.reject_document(
+    token,
+    "F9D425P6DS7D8IU",
+    "Received incorrect invoice from the seller",
+)
+print(result.success)
+```
+
+## Get recent documents
+
+Requires a token from `login()`. Calls `GET /api/v1.0/documents/recent`. Full walkthrough: [docs/recent-documents.md](docs/recent-documents.md).
+
+```python
+docs = client.get_recent_documents(
+    token,
+    page_no=1,
+    page_size=20,
+    direction="Sent",
+    status="Valid",
+)
+for doc in docs:
+    print(doc.uuid, doc.internal_id, doc.status)
+```
+
+## Search documents
+
+Requires a token from `login()`. Calls `GET /api/v1.0/documents/search`. Prefer this over Get Recent Documents. Full walkthrough: [docs/search-documents.md](docs/search-documents.md).
+
+```python
+docs = client.search_documents(
+    token,
+    page_size=100,
+    submission_date_from="2022-11-25T01:59:10Z",
+    submission_date_to="2022-12-22T23:59:59Z",
+    direction="Sent",
+    status="Valid",
+)
+for doc in docs:
+    print(doc.uuid, doc.internal_id, doc.status)
+if docs.has_more():
+    next_page = client.search_documents(
+        token,
+        page_size=100,
+        submission_date_from="2022-11-25T01:59:10Z",
+        submission_date_to="2022-12-22T23:59:59Z",
+        direction="Sent",
+        status="Valid",
+        continuation_token=docs.continuation_token,
+    )
+```
+
+## Request document package
+
+Requires a token from `login()`. Calls `POST /api/v1.0/documentpackages/requests`. Returns a `packageId` for later download. Full walkthrough: [docs/request-document-package.md](docs/request-document-package.md).
+
+```python
+result = client.request_document_package(
+    token,
+    type="full",
+    format="JSON",
+    date_from="2015-02-13T14:20Z",
+    date_to="2015-02-20T21:30Z",
+)
+print(result.package_id)
+```
+
+## Get package requests
+
+Requires a token from `login()`. Calls `GET /api/v1.0/documentpackages/requests`. Full walkthrough: [docs/package-requests.md](docs/package-requests.md).
+
+```python
+packages = client.get_package_requests(token, page_no=1, page_size=20)
+for package in packages:
+    print(package.package_id, package.status, package.is_expired)
+```
+
+## Get document package
+
+Requires a token from `login()` and a `packageId`. Calls `GET /api/v1.0/documentpackages/{rid}` and returns ZIP bytes when ready. Full walkthrough: [docs/document-package.md](docs/document-package.md).
+
+```python
+download = client.get_document_package(token, "45KJHHA62D")
+if download.ready:
+    download.save("invoices.zip")
+```
+
+## Get document
+
+Requires a token from `login()` and the ETA document `uuid`. Calls `GET /api/v1.0/documents/{uuid}/raw`. Full walkthrough: [docs/get-document.md](docs/get-document.md).
+
+```python
+doc = client.get_document(token, "F9D425P6DS7D8IU")
+print(doc.uuid, doc.status, doc.total)
+print(doc.document)
+```
+
+## Get submission
+
+Requires a token from `login()` and the submission `uuid` from `submit_documents()`. Calls `GET /api/v1.0/documentsubmissions/{uuid}`. Full walkthrough: [docs/get-submission.md](docs/get-submission.md).
+
+```python
+submission = client.get_submission(token, "HJSD135P2S7D8IU", page_no=1, page_size=20)
+print(submission.overall_status, submission.document_count)
+for doc in submission:
+    print(doc.uuid, doc.internal_id, doc.status)
+```
+
+## Get document printout
+
+Requires a token from `login()` and the ETA document `uuid`. Calls `GET /api/v1.0/documents/{uuid}/pdf` and returns PDF bytes. Full walkthrough: [docs/document-printout.md](docs/document-printout.md).
+
+```python
+pdf = client.get_document_printout(token, "SG4SSD5KJHHA62D")
+pdf.save("invoice.pdf")
 ```
 
 ## Environments
