@@ -72,6 +72,11 @@ from egypt_compliance.models.search_documents import (
     SearchDocumentsQuery,
     SearchDocumentsResult,
 )
+from egypt_compliance.models.submission import (
+    GetSubmissionQuery,
+    GetSubmissionResult,
+    SubmissionMetadata,
+)
 from egypt_compliance.models.token import LoginCredentials, Token
 
 __all__ = [
@@ -100,6 +105,8 @@ __all__ = [
     "EGSRequestStatus",
     "EGSRequestType",
     "FreezeStatus",
+    "GetSubmissionQuery",
+    "GetSubmissionResult",
     "LoginCredentials",
     "Notification",
     "NotificationQuery",
@@ -130,6 +137,7 @@ __all__ = [
     "SubmitDocumentsRequest",
     "SubmitDocumentsResult",
     "SubmittedDocument",
+    "SubmissionMetadata",
     "Token",
     "UpdateCodeRequest",
     "UpdateCodeResult",

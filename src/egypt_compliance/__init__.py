@@ -97,6 +97,11 @@ from egypt_compliance.models.search_documents import (
     SearchDocumentsQuery,
     SearchDocumentsResult,
 )
+from egypt_compliance.models.submission import (
+    GetSubmissionQuery,
+    GetSubmissionResult,
+    SubmissionMetadata,
+)
 from egypt_compliance.models.token import LoginCredentials, Token
 from egypt_compliance.signing import (
     DocumentSigner,
@@ -149,6 +154,8 @@ __all__ = [
     "ExportDebitNote",
     "ExportInvoice",
     "FreezeStatus",
+    "GetSubmissionQuery",
+    "GetSubmissionResult",
     "Invoice",
     "InvoiceDocument",
     "InvoiceFactory",
@@ -189,6 +196,7 @@ __all__ = [
     "SubmitDocumentsRequest",
     "SubmitDocumentsResult",
     "SubmittedDocument",
+    "SubmissionMetadata",
     "TaxableItem",
     "TaxTotal",
     "Token",

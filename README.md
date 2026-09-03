@@ -2,7 +2,7 @@
 
 Python SDK for Egyptian Tax Authority (ETA) eInvoicing integration.
 
-Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, **CAdES-BES signatures**, **cancel document**, **reject document**, **get recent documents**, **search documents**, **request document package**, **get package requests**, **get document package**, and **get document**.
+Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, **CAdES-BES signatures**, **cancel document**, **reject document**, **get recent documents**, **search documents**, **request document package**, **get package requests**, **get document package**, **get document**, and **get submission**.
 
 ## Install
 
@@ -428,6 +428,17 @@ Requires a token from `login()` and the ETA document `uuid`. Calls `GET /api/v1.
 doc = client.get_document(token, "F9D425P6DS7D8IU")
 print(doc.uuid, doc.status, doc.total)
 print(doc.document)
+```
+
+## Get submission
+
+Requires a token from `login()` and the submission `uuid` from `submit_documents()`. Calls `GET /api/v1.0/documentsubmissions/{uuid}`. Full walkthrough: [docs/get-submission.md](docs/get-submission.md).
+
+```python
+submission = client.get_submission(token, "HJSD135P2S7D8IU", page_no=1, page_size=20)
+print(submission.overall_status, submission.document_count)
+for doc in submission:
+    print(doc.uuid, doc.internal_id, doc.status)
 ```
 
 ## Environments

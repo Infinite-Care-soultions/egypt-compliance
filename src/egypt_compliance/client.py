@@ -60,6 +60,7 @@ from egypt_compliance.models.search_documents import (
     SearchDocumentsQuery,
     SearchDocumentsResult,
 )
+from egypt_compliance.models.submission import GetSubmissionQuery, GetSubmissionResult
 from egypt_compliance.models.token import LoginCredentials, Token
 
 
@@ -701,6 +702,36 @@ class ETAClient:
         ):
             payload = payload["result"]
         return DocumentExtended.model_validate(payload)
+
+    def get_submission(
+        self,
+        token: Token | str,
+        uuid: str,
+        query: GetSubmissionQuery | None = None,
+        *,
+        page_no: int | None = None,
+        page_size: int | None = None,
+        accept_language: str = "en",
+    ) -> GetSubmissionResult:
+        if not uuid or not str(uuid).strip():
+            raise ValueError("uuid is required")
+        filters = query or GetSubmissionQuery(page_no=page_no, page_size=page_size)
+        payload = self._request_json(
+            "GET",
+            self.config.document_submission_url(str(uuid).strip()),
+            token=token,
+            accept_language=accept_language,
+            params=filters.as_query_params(),
+        )
+        if payload is None:
+            return GetSubmissionResult()
+        if (
+            isinstance(payload, dict)
+            and "uuid" not in payload
+            and isinstance(payload.get("result"), dict)
+        ):
+            payload = payload["result"]
+        return GetSubmissionResult.model_validate(payload)
 
     def close(self) -> None:
         if self._owns_client and self._http is not None:

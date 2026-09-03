@@ -59,6 +59,9 @@ class ETAConfig(BaseModel):
     def document_submissions_url(self) -> str:
         return self.api_url("/api/v1.0/documentsubmissions")
 
+    def document_submission_url(self, uuid: str) -> str:
+        return self.api_url(f"/api/v1.0/documentsubmissions/{quote(uuid, safe='-._~')}")
+
     def document_state_url(self, uuid: str) -> str:
         return self.api_url(f"/api/v1.0/documents/state/{quote(uuid, safe='-._~')}/state")
 
