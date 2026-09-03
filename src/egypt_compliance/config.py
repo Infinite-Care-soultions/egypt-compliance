@@ -59,6 +59,17 @@ class ETAConfig(BaseModel):
     def document_submissions_url(self) -> str:
         return self.api_url("/api/v1.0/documentsubmissions")
 
+    def document_state_url(self, uuid: str) -> str:
+        return self.api_url(f"/api/v1.0/documents/state/{quote(uuid, safe='-._~')}/state")
+
+    @property
+    def recent_documents_url(self) -> str:
+        return self.api_url("/api/v1.0/documents/recent")
+
+    @property
+    def search_documents_url(self) -> str:
+        return self.api_url("/api/v1.0/documents/search")
+
 
 PREPROD = ETAConfig(
     environment=Environment.PREPROD,

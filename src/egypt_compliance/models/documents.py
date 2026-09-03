@@ -59,3 +59,33 @@ class SubmitDocumentsResult(BaseModel):
     submission_uuid: str | None = Field(default=None, alias="submissionUUID")
     accepted_documents: list[AcceptedDocument] = Field(default_factory=list, alias="acceptedDocuments")
     rejected_documents: list[RejectedDocument] = Field(default_factory=list, alias="rejectedDocuments")
+
+
+class CancelDocumentRequest(BaseModel):
+    status: str = "cancelled"
+    reason: str
+
+    def as_api_body(self) -> dict:
+        return self.model_dump(exclude_none=True, mode="json")
+
+
+class CancelDocumentResult(BaseModel):
+    """ETA documents a 200 on success; the response body is optional."""
+
+    success: bool = True
+    payload: dict | list | None = None
+
+
+class RejectDocumentRequest(BaseModel):
+    status: str = "rejected"
+    reason: str
+
+    def as_api_body(self) -> dict:
+        return self.model_dump(exclude_none=True, mode="json")
+
+
+class RejectDocumentResult(BaseModel):
+    """ETA documents a 200 on success; the response body is optional."""
+
+    success: bool = True
+    payload: dict | list | None = None

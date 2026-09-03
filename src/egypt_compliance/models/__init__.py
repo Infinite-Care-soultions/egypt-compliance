@@ -7,7 +7,11 @@ from egypt_compliance.models.document_types import (
 )
 from egypt_compliance.models.documents import (
     AcceptedDocument,
+    CancelDocumentRequest,
+    CancelDocumentResult,
     DocumentSignature,
+    RejectDocumentRequest,
+    RejectDocumentResult,
     RejectedDocument,
     SubmissionError,
     SubmitDocumentsRequest,
@@ -39,10 +43,24 @@ from egypt_compliance.models.notifications import (
     NotificationType,
     PageMetadata,
 )
+from egypt_compliance.models.recent_documents import (
+    DocumentSummary,
+    FreezeStatus,
+    RecentDocumentsMetadata,
+    RecentDocumentsQuery,
+    RecentDocumentsResult,
+)
+from egypt_compliance.models.search_documents import (
+    SearchDocumentsMetadata,
+    SearchDocumentsQuery,
+    SearchDocumentsResult,
+)
 from egypt_compliance.models.token import LoginCredentials, Token
 
 __all__ = [
     "AcceptedDocument",
+    "CancelDocumentRequest",
+    "CancelDocumentResult",
     "CodeReuseItem",
     "CreateEGSCodeUsageRequest",
     "CreateEGSCodeUsageResult",
@@ -51,11 +69,13 @@ __all__ = [
     "DocumentTypeVersion",
     "DocumentTypeVersionDetail",
     "DocumentSignature",
+    "DocumentSummary",
     "DocumentTypesResult",
     "EGSCodeUsageItem",
     "EGSCodeUsageRequestDetails",
     "EGSRequestStatus",
     "EGSRequestType",
+    "FreezeStatus",
     "LoginCredentials",
     "Notification",
     "NotificationQuery",
@@ -64,9 +84,17 @@ __all__ = [
     "OrderDirection",
     "PageMetadata",
     "PublishedCodeDetails",
+    "RejectDocumentRequest",
+    "RejectDocumentResult",
     "RejectedDocument",
     "RequestCodeReuseRequest",
     "RequestCodeReuseResult",
+    "RecentDocumentsMetadata",
+    "RecentDocumentsQuery",
+    "RecentDocumentsResult",
+    "SearchDocumentsMetadata",
+    "SearchDocumentsQuery",
+    "SearchDocumentsResult",
     "SearchEGSCodeUsageQuery",
     "SearchEGSCodeUsageResult",
     "SubmissionError",

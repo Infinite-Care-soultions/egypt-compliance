@@ -32,7 +32,11 @@ from egypt_compliance.models.document_types import (
 )
 from egypt_compliance.models.documents import (
     AcceptedDocument,
+    CancelDocumentRequest,
+    CancelDocumentResult,
     DocumentSignature,
+    RejectDocumentRequest,
+    RejectDocumentResult,
     RejectedDocument,
     SubmissionError,
     SubmitDocumentsRequest,
@@ -64,6 +68,18 @@ from egypt_compliance.models.notifications import (
     NotificationType,
     PageMetadata,
 )
+from egypt_compliance.models.recent_documents import (
+    DocumentSummary,
+    FreezeStatus,
+    RecentDocumentsMetadata,
+    RecentDocumentsQuery,
+    RecentDocumentsResult,
+)
+from egypt_compliance.models.search_documents import (
+    SearchDocumentsMetadata,
+    SearchDocumentsQuery,
+    SearchDocumentsResult,
+)
 from egypt_compliance.models.token import LoginCredentials, Token
 from egypt_compliance.signing import (
     DocumentSigner,
@@ -76,6 +92,8 @@ from egypt_compliance.signing import (
 __all__ = [
     "AcceptedDocument",
     "Address",
+    "CancelDocumentRequest",
+    "CancelDocumentResult",
     "CreateEGSCodeUsageRequest",
     "CreateEGSCodeUsageResult",
     "CodeReuseItem",
@@ -85,6 +103,7 @@ __all__ = [
     "DeliveryAttempt",
     "Discount",
     "DocumentSigner",
+    "DocumentSummary",
     "DocumentType",
     "DocumentTypeVersion",
     "DocumentTypeVersionDetail",
@@ -105,6 +124,7 @@ __all__ = [
     "ExportCreditNote",
     "ExportDebitNote",
     "ExportInvoice",
+    "FreezeStatus",
     "Invoice",
     "InvoiceDocument",
     "InvoiceFactory",
@@ -120,10 +140,18 @@ __all__ = [
     "PageMetadata",
     "Payment",
     "PublishedCodeDetails",
+    "RejectDocumentRequest",
+    "RejectDocumentResult",
     "RejectedDocument",
     "RequestCodeReuseRequest",
     "RequestCodeReuseResult",
     "Receiver",
+    "RecentDocumentsMetadata",
+    "RecentDocumentsQuery",
+    "RecentDocumentsResult",
+    "SearchDocumentsMetadata",
+    "SearchDocumentsQuery",
+    "SearchDocumentsResult",
     "SearchEGSCodeUsageQuery",
     "SearchEGSCodeUsageResult",
     "SignatureFactory",

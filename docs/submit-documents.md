@@ -75,7 +75,7 @@ for rejected in result.rejected_documents:
 | `accepted_documents[].internal_id` | Your `internalID` from the submitted document |
 | `rejected_documents[].error` | Why that document was not accepted |
 
-Store `uuid` / `long_id` against the ERP invoice number (`internal_id`). Use them later to retrieve, cancel, or follow validation results.
+Store `uuid` / `long_id` against the ERP invoice number (`internal_id`). Use them later to retrieve, [cancel](cancel-document.md), or follow validation results.
 
 A 202 response only means synchronous checks passed for the accepted documents. Full validation can still fail later.
 

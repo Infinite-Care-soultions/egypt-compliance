@@ -13,6 +13,10 @@ from egypt_compliance.models.document_types import (
     DocumentTypeVersionDetail,
 )
 from egypt_compliance.models.documents import (
+    CancelDocumentRequest,
+    CancelDocumentResult,
+    RejectDocumentRequest,
+    RejectDocumentResult,
     SubmitDocumentsRequest,
     SubmitDocumentsResult,
     SubmittedDocument,
@@ -37,6 +41,14 @@ from egypt_compliance.models.notifications import (
     NotificationQuery,
     NotificationsResult,
     NotificationType,
+)
+from egypt_compliance.models.recent_documents import (
+    RecentDocumentsQuery,
+    RecentDocumentsResult,
+)
+from egypt_compliance.models.search_documents import (
+    SearchDocumentsQuery,
+    SearchDocumentsResult,
 )
 from egypt_compliance.models.token import LoginCredentials, Token
 
@@ -363,6 +375,168 @@ class ETAClient:
         if payload is None:
             return SubmitDocumentsResult()
         return SubmitDocumentsResult.model_validate(payload)
+
+    def cancel_document(
+        self,
+        token: Token | str,
+        uuid: str,
+        reason: str | CancelDocumentRequest,
+        *,
+        status: str = "cancelled",
+        accept_language: str = "en",
+    ) -> CancelDocumentResult:
+        request = (
+            reason
+            if isinstance(reason, CancelDocumentRequest)
+            else CancelDocumentRequest(status=status, reason=reason)
+        )
+        if not uuid or not str(uuid).strip():
+            raise ValueError("uuid is required")
+        if not request.reason or not request.reason.strip():
+            raise ValueError("reason is required")
+        payload = self._request_json(
+            "PUT",
+            self.config.document_state_url(str(uuid).strip()),
+            token=token,
+            accept_language=accept_language,
+            json=request.as_api_body(),
+        )
+        if payload is None:
+            return CancelDocumentResult(success=True)
+        if isinstance(payload, (dict, list)):
+            return CancelDocumentResult(success=True, payload=payload)
+        return CancelDocumentResult(success=True)
+
+    def reject_document(
+        self,
+        token: Token | str,
+        uuid: str,
+        reason: str | RejectDocumentRequest,
+        *,
+        status: str = "rejected",
+        accept_language: str = "en",
+    ) -> RejectDocumentResult:
+        request = (
+            reason
+            if isinstance(reason, RejectDocumentRequest)
+            else RejectDocumentRequest(status=status, reason=reason)
+        )
+        if not uuid or not str(uuid).strip():
+            raise ValueError("uuid is required")
+        if not request.reason or not request.reason.strip():
+            raise ValueError("reason is required")
+        payload = self._request_json(
+            "PUT",
+            self.config.document_state_url(str(uuid).strip()),
+            token=token,
+            accept_language=accept_language,
+            json=request.as_api_body(),
+        )
+        if payload is None:
+            return RejectDocumentResult(success=True)
+        if isinstance(payload, (dict, list)):
+            return RejectDocumentResult(success=True, payload=payload)
+        return RejectDocumentResult(success=True)
+
+    def get_recent_documents(
+        self,
+        token: Token | str,
+        query: RecentDocumentsQuery | None = None,
+        *,
+        page_no: int | None = None,
+        page_size: int | None = None,
+        submission_date_from: datetime | str | None = None,
+        submission_date_to: datetime | str | None = None,
+        issue_date_from: datetime | str | None = None,
+        issue_date_to: datetime | str | None = None,
+        direction: str | None = None,
+        status: str | None = None,
+        document_type: str | None = None,
+        receiver_type: str | None = None,
+        receiver_id: str | None = None,
+        issuer_type: str | None = None,
+        issuer_id: str | None = None,
+        accept_language: str = "en",
+    ) -> RecentDocumentsResult:
+        filters = query or RecentDocumentsQuery(
+            page_no=page_no,
+            page_size=page_size,
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_type=receiver_type,
+            receiver_id=receiver_id,
+            issuer_type=issuer_type,
+            issuer_id=issuer_id,
+        )
+        payload = self._request_json(
+            "GET",
+            self.config.recent_documents_url,
+            token=token,
+            accept_language=accept_language,
+            params=filters.as_query_params(),
+        )
+        if payload is None:
+            payload = {"result": []}
+        if isinstance(payload, list):
+            payload = {"result": payload}
+        return RecentDocumentsResult.model_validate(payload)
+
+    def search_documents(
+        self,
+        token: Token | str,
+        query: SearchDocumentsQuery | None = None,
+        *,
+        submission_date_from: datetime | str | None = None,
+        submission_date_to: datetime | str | None = None,
+        issue_date_from: datetime | str | None = None,
+        issue_date_to: datetime | str | None = None,
+        continuation_token: str | None = None,
+        page_size: int | None = None,
+        direction: str | None = None,
+        status: str | None = None,
+        document_type: str | None = None,
+        receiver_type: str | None = None,
+        receiver_id: str | None = None,
+        issuer_type: str | None = None,
+        issuer_id: str | None = None,
+        uuid: str | None = None,
+        internal_id: str | None = None,
+        accept_language: str = "en",
+    ) -> SearchDocumentsResult:
+        filters = query or SearchDocumentsQuery(
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            continuation_token=continuation_token,
+            page_size=page_size,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_type=receiver_type,
+            receiver_id=receiver_id,
+            issuer_type=issuer_type,
+            issuer_id=issuer_id,
+            uuid=uuid,
+            internal_id=internal_id,
+        )
+        payload = self._request_json(
+            "GET",
+            self.config.search_documents_url,
+            token=token,
+            accept_language=accept_language,
+            params=filters.as_query_params(),
+        )
+        if payload is None:
+            payload = {"result": []}
+        if isinstance(payload, list):
+            payload = {"result": payload}
+        return SearchDocumentsResult.model_validate(payload)
 
     def close(self) -> None:
         if self._owns_client and self._http is not None:

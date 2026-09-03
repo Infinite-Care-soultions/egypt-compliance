@@ -2,7 +2,7 @@
 
 Python SDK for Egyptian Tax Authority (ETA) eInvoicing integration.
 
-Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, and **CAdES-BES signatures**.
+Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, **CAdES-BES signatures**, **cancel document**, **reject document**, **get recent documents**, and **search documents**.
 
 ## Install
 
@@ -318,6 +318,71 @@ for accepted in result.accepted_documents:
     print(accepted.internal_id, accepted.uuid, accepted.long_id)
 for rejected in result.rejected_documents:
     print(rejected.internal_id, rejected.error.message)
+```
+
+## Cancel document
+
+Requires a token from `login()` and the ETA document `uuid` from submit. Calls `PUT /api/v1.0/documents/state/{uuid}/state`. Full walkthrough: [docs/cancel-document.md](docs/cancel-document.md).
+
+```python
+result = client.cancel_document(token, "F9D425P6DS7D8IU", "Wrong invoice details")
+print(result.success)
+```
+
+## Reject document
+
+Requires a token from `login()`. The **recipient** rejects a received document by ETA `uuid`. Calls `PUT /api/v1.0/documents/state/{uuid}/state` with `status: rejected`. Full walkthrough: [docs/reject-document.md](docs/reject-document.md).
+
+```python
+result = client.reject_document(
+    token,
+    "F9D425P6DS7D8IU",
+    "Received incorrect invoice from the seller",
+)
+print(result.success)
+```
+
+## Get recent documents
+
+Requires a token from `login()`. Calls `GET /api/v1.0/documents/recent`. Full walkthrough: [docs/recent-documents.md](docs/recent-documents.md).
+
+```python
+docs = client.get_recent_documents(
+    token,
+    page_no=1,
+    page_size=20,
+    direction="Sent",
+    status="Valid",
+)
+for doc in docs:
+    print(doc.uuid, doc.internal_id, doc.status)
+```
+
+## Search documents
+
+Requires a token from `login()`. Calls `GET /api/v1.0/documents/search`. Prefer this over Get Recent Documents. Full walkthrough: [docs/search-documents.md](docs/search-documents.md).
+
+```python
+docs = client.search_documents(
+    token,
+    page_size=100,
+    submission_date_from="2022-11-25T01:59:10Z",
+    submission_date_to="2022-12-22T23:59:59Z",
+    direction="Sent",
+    status="Valid",
+)
+for doc in docs:
+    print(doc.uuid, doc.internal_id, doc.status)
+if docs.has_more():
+    next_page = client.search_documents(
+        token,
+        page_size=100,
+        submission_date_from="2022-11-25T01:59:10Z",
+        submission_date_to="2022-12-22T23:59:59Z",
+        direction="Sent",
+        status="Valid",
+        continuation_token=docs.continuation_token,
+    )
 ```
 
 ## Environments
