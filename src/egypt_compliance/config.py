@@ -83,6 +83,9 @@ class ETAConfig(BaseModel):
     def document_raw_url(self, uuid: str) -> str:
         return self.api_url(f"/api/v1.0/documents/{quote(uuid, safe='-._~')}/raw")
 
+    def document_pdf_url(self, uuid: str) -> str:
+        return self.api_url(f"/api/v1.0/documents/{quote(uuid, safe='-._~')}/pdf")
+
 
 PREPROD = ETAConfig(
     environment=Environment.PREPROD,

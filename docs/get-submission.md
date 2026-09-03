@@ -46,7 +46,7 @@ submission = client.get_submission(
 )
 ```
 
-Then load a single invoice with [`get_document()`](get-document.md) using `doc.uuid`.
+Then load a single invoice with [`get_document()`](get-document.md) using `doc.uuid`, or download a PDF with [`get_document_printout()`](document-printout.md).
 
 ## Errors
 

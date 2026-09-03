@@ -7,7 +7,7 @@ import httpx
 
 from egypt_compliance.config import ETAConfig
 from egypt_compliance.exceptions import ETAAPIError, ETAAuthenticationError, ETAError
-from egypt_compliance.models.document_detail import DocumentExtended
+from egypt_compliance.models.document_detail import DocumentExtended, DocumentPrintout
 from egypt_compliance.models.document_packages import (
     DocumentPackageDownload,
     DocumentPackageItemCode,
@@ -732,6 +732,38 @@ class ETAClient:
         ):
             payload = payload["result"]
         return GetSubmissionResult.model_validate(payload)
+
+    def get_document_printout(
+        self,
+        token: Token | str,
+        uuid: str,
+        *,
+        accept_language: str = "en",
+    ) -> DocumentPrintout:
+        if not uuid or not str(uuid).strip():
+            raise ValueError("uuid is required")
+        uuid = str(uuid).strip()
+        response = self._request_raw(
+            "GET",
+            self.config.document_pdf_url(uuid),
+            token=token,
+            accept_language=accept_language,
+            accept="application/pdf",
+            ok_statuses=(200,),
+        )
+        content_length_header = response.headers.get("Content-Length")
+        content_length = None
+        if content_length_header:
+            try:
+                content_length = int(content_length_header)
+            except ValueError:
+                content_length = None
+        return DocumentPrintout(
+            uuid=uuid,
+            content=response.content,
+            content_type=response.headers.get("Content-Type"),
+            content_length=content_length,
+        )
 
     def close(self) -> None:
         if self._owns_client and self._http is not None:

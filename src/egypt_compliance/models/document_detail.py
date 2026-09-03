@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from egypt_compliance.models.documents import SubmissionError
@@ -61,3 +63,22 @@ class DocumentExtended(BaseModel):
     additional_metadata: list[AdditionalMetadata] = Field(
         default_factory=list, alias="additionalMetadata"
     )
+
+
+class DocumentPrintout(BaseModel):
+    """PDF bytes for an ETA document printout."""
+
+    uuid: str
+    content: bytes
+    content_type: str | None = None
+    content_length: int | None = None
+
+    @property
+    def size(self) -> int:
+        return len(self.content)
+
+    def save(self, path: str | Path) -> Path:
+        destination = Path(path)
+        destination.write_bytes(self.content)
+        return destination
+

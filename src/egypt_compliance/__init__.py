@@ -26,6 +26,7 @@ from egypt_compliance.invoices import (
 from egypt_compliance.models.document_detail import (
     AdditionalMetadata,
     DocumentExtended,
+    DocumentPrintout,
     DocumentValidationResults,
     ValidationStepResult,
 )
@@ -129,6 +130,7 @@ __all__ = [
     "DocumentPackageInformation",
     "DocumentPackageItemCode",
     "DocumentPackageQueryParameters",
+    "DocumentPrintout",
     "DocumentSigner",
     "DocumentSummary",
     "DocumentType",

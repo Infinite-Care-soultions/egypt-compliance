@@ -6,7 +6,7 @@ Official API: [Get Document](https://sdk.invoicing.eta.gov.eg/einvoicingapi/08-g
 
 `GET /api/v1.0/documents/{uuid}/raw`
 
-`uuid` comes from submit (`accepted_documents[].uuid`) or from [`get_recent_documents()`](recent-documents.md) / [`search_documents()`](search-documents.md).
+`uuid` comes from submit (`accepted_documents[].uuid`) or from [`get_recent_documents()`](recent-documents.md) / [`search_documents()`](search-documents.md). For a PDF, use [`get_document_printout()`](document-printout.md).
 
 Receivers can only load `Valid`, `Rejected`, and `Cancelled`. If the document is still `submitted` or `invalid`, ETA returns not found. Issuers can load any status.
 

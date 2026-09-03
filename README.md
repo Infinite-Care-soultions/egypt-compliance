@@ -2,7 +2,7 @@
 
 Python SDK for Egyptian Tax Authority (ETA) eInvoicing integration.
 
-Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, **CAdES-BES signatures**, **cancel document**, **reject document**, **get recent documents**, **search documents**, **request document package**, **get package requests**, **get document package**, **get document**, and **get submission**.
+Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, **CAdES-BES signatures**, **cancel document**, **reject document**, **get recent documents**, **search documents**, **request document package**, **get package requests**, **get document package**, **get document**, **get submission**, and **get document printout**.
 
 ## Install
 
@@ -439,6 +439,15 @@ submission = client.get_submission(token, "HJSD135P2S7D8IU", page_no=1, page_siz
 print(submission.overall_status, submission.document_count)
 for doc in submission:
     print(doc.uuid, doc.internal_id, doc.status)
+```
+
+## Get document printout
+
+Requires a token from `login()` and the ETA document `uuid`. Calls `GET /api/v1.0/documents/{uuid}/pdf` and returns PDF bytes. Full walkthrough: [docs/document-printout.md](docs/document-printout.md).
+
+```python
+pdf = client.get_document_printout(token, "SG4SSD5KJHHA62D")
+pdf.save("invoice.pdf")
 ```
 
 ## Environments

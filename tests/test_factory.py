@@ -57,6 +57,9 @@ def test_factory_create_preprod_uses_identity_and_api_urls():
     assert client.config.document_raw_url("F9D425P6DS7D8IU") == (
         "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/F9D425P6DS7D8IU/raw"
     )
+    assert client.config.document_pdf_url("SG4SSD5KJHHA62D") == (
+        "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/SG4SSD5KJHHA62D/pdf"
+    )
     assert client.config.document_submission_url("HJSD135P2S7D8IU") == (
         "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentsubmissions/HJSD135P2S7D8IU"
     )
@@ -115,6 +118,9 @@ def test_factory_create_prod_uses_identity_and_api_urls():
     )
     assert client.config.document_raw_url("F9D425P6DS7D8IU") == (
         "https://api.invoicing.eta.gov.eg/api/v1.0/documents/F9D425P6DS7D8IU/raw"
+    )
+    assert client.config.document_pdf_url("SG4SSD5KJHHA62D") == (
+        "https://api.invoicing.eta.gov.eg/api/v1.0/documents/SG4SSD5KJHHA62D/pdf"
     )
     assert client.config.document_submission_url("HJSD135P2S7D8IU") == (
         "https://api.invoicing.eta.gov.eg/api/v1.0/documentsubmissions/HJSD135P2S7D8IU"
