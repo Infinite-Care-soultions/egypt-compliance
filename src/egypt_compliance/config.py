@@ -70,6 +70,10 @@ class ETAConfig(BaseModel):
     def search_documents_url(self) -> str:
         return self.api_url("/api/v1.0/documents/search")
 
+    @property
+    def document_package_requests_url(self) -> str:
+        return self.api_url("/api/v1.0/documentpackages/requests")
+
 
 PREPROD = ETAConfig(
     environment=Environment.PREPROD,

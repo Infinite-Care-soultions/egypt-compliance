@@ -72,3 +72,9 @@ Get Package Requests
 refrence link :
 https://sdk.invoicing.eta.gov.eg/einvoicingapi/06-get-package-requests/
 After finish phase 9  create usage documentation 
+
+
+phase 10
+Get Document Package
+refrence link :
+https://sdk.invoicing.eta.gov.eg/einvoicingapi/07-get-document-package/

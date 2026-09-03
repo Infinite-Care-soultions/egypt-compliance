@@ -7,6 +7,12 @@ import httpx
 
 from egypt_compliance.config import ETAConfig
 from egypt_compliance.exceptions import ETAAPIError, ETAAuthenticationError, ETAError
+from egypt_compliance.models.document_packages import (
+    DocumentPackageItemCode,
+    DocumentPackageQueryParameters,
+    RequestDocumentPackageRequest,
+    RequestDocumentPackageResult,
+)
 from egypt_compliance.models.document_types import (
     DocumentType,
     DocumentTypesResult,
@@ -537,6 +543,72 @@ class ETAClient:
         if isinstance(payload, list):
             payload = {"result": payload}
         return SearchDocumentsResult.model_validate(payload)
+
+    def request_document_package(
+        self,
+        token: Token | str,
+        request: RequestDocumentPackageRequest | None = None,
+        *,
+        type: str = "full",
+        format: str = "JSON",
+        query_parameters: DocumentPackageQueryParameters | None = None,
+        date_from: datetime | str | None = None,
+        date_to: datetime | str | None = None,
+        document_type_names: list[str] | None = None,
+        statuses: list[str] | None = None,
+        products_internal_codes: list[str] | None = None,
+        receiver_sender_type: str | int | None = None,
+        receiver_sender_id: str | None = None,
+        branch_number: str | None = None,
+        item_codes: list[DocumentPackageItemCode] | None = None,
+        truncate_if_exceeded: bool | None = None,
+        represented_taxpayer_filter_type: int | None = None,
+        representee_rin: str | None = None,
+        accept_language: str = "en",
+    ) -> RequestDocumentPackageResult:
+        if request is None:
+            query = query_parameters or DocumentPackageQueryParameters(
+                date_from=date_from,
+                date_to=date_to,
+                document_type_names=document_type_names,
+                statuses=statuses,
+                products_internal_codes=products_internal_codes,
+                receiver_sender_type=receiver_sender_type,
+                receiver_sender_id=receiver_sender_id,
+                branch_number=branch_number,
+                item_codes=item_codes,
+                truncate_if_exceeded=truncate_if_exceeded,
+            )
+            request = RequestDocumentPackageRequest(
+                type=type,
+                format=format,
+                query_parameters=query,
+                represented_taxpayer_filter_type=represented_taxpayer_filter_type,
+                representee_rin=representee_rin,
+            )
+        if not request.query_parameters.date_from or not request.query_parameters.date_to:
+            raise ValueError("date_from and date_to are required")
+        payload = self._request_json(
+            "POST",
+            self.config.document_package_requests_url,
+            token=token,
+            accept_language=accept_language,
+            json=request.as_api_body(),
+            ok_statuses=(200, 201),
+        )
+        if payload is None:
+            return RequestDocumentPackageResult()
+        if isinstance(payload, str):
+            return RequestDocumentPackageResult(package_id=payload)
+        if isinstance(payload, dict):
+            inner = payload.get("result")
+            if "packageId" not in payload and "packageID" not in payload and "package_id" not in payload:
+                if isinstance(inner, dict):
+                    payload = inner
+                elif isinstance(inner, str):
+                    return RequestDocumentPackageResult(package_id=inner)
+            return RequestDocumentPackageResult.model_validate(payload)
+        return RequestDocumentPackageResult()
 
     def close(self) -> None:
         if self._owns_client and self._http is not None:

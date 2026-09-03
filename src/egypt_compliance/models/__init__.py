@@ -1,3 +1,9 @@
+from egypt_compliance.models.document_packages import (
+    DocumentPackageItemCode,
+    DocumentPackageQueryParameters,
+    RequestDocumentPackageRequest,
+    RequestDocumentPackageResult,
+)
 from egypt_compliance.models.document_types import (
     DocumentType,
     DocumentTypesResult,
@@ -65,6 +71,8 @@ __all__ = [
     "CreateEGSCodeUsageRequest",
     "CreateEGSCodeUsageResult",
     "DeliveryAttempt",
+    "DocumentPackageItemCode",
+    "DocumentPackageQueryParameters",
     "DocumentType",
     "DocumentTypeVersion",
     "DocumentTypeVersionDetail",
@@ -89,6 +97,8 @@ __all__ = [
     "RejectedDocument",
     "RequestCodeReuseRequest",
     "RequestCodeReuseResult",
+    "RequestDocumentPackageRequest",
+    "RequestDocumentPackageResult",
     "RecentDocumentsMetadata",
     "RecentDocumentsQuery",
     "RecentDocumentsResult",

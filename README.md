@@ -2,7 +2,7 @@
 
 Python SDK for Egyptian Tax Authority (ETA) eInvoicing integration.
 
-Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, **CAdES-BES signatures**, **cancel document**, **reject document**, **get recent documents**, and **search documents**.
+Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, **CAdES-BES signatures**, **cancel document**, **reject document**, **get recent documents**, **search documents**, and **request document package**.
 
 ## Install
 
@@ -383,6 +383,21 @@ if docs.has_more():
         status="Valid",
         continuation_token=docs.continuation_token,
     )
+```
+
+## Request document package
+
+Requires a token from `login()`. Calls `POST /api/v1.0/documentpackages/requests`. Returns a `packageId` for later download. Full walkthrough: [docs/request-document-package.md](docs/request-document-package.md).
+
+```python
+result = client.request_document_package(
+    token,
+    type="full",
+    format="JSON",
+    date_from="2015-02-13T14:20Z",
+    date_to="2015-02-20T21:30Z",
+)
+print(result.package_id)
 ```
 
 ## Environments

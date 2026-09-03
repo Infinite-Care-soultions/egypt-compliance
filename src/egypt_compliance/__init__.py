@@ -23,6 +23,12 @@ from egypt_compliance.invoices import (
     TaxTotal,
     UnitValue,
 )
+from egypt_compliance.models.document_packages import (
+    DocumentPackageItemCode,
+    DocumentPackageQueryParameters,
+    RequestDocumentPackageRequest,
+    RequestDocumentPackageResult,
+)
 from egypt_compliance.models.document_types import (
     DocumentType,
     DocumentTypesResult,
@@ -102,6 +108,8 @@ __all__ = [
     "Delivery",
     "DeliveryAttempt",
     "Discount",
+    "DocumentPackageItemCode",
+    "DocumentPackageQueryParameters",
     "DocumentSigner",
     "DocumentSummary",
     "DocumentType",
@@ -145,6 +153,8 @@ __all__ = [
     "RejectedDocument",
     "RequestCodeReuseRequest",
     "RequestCodeReuseResult",
+    "RequestDocumentPackageRequest",
+    "RequestDocumentPackageResult",
     "Receiver",
     "RecentDocumentsMetadata",
     "RecentDocumentsQuery",
