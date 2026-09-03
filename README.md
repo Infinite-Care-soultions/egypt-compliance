@@ -2,7 +2,7 @@
 
 Python SDK for Egyptian Tax Authority (ETA) eInvoicing integration.
 
-Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**.
+Phase 1 supports **login as a taxpayer system**. Phase 2 supports **get document types**. Phase 3 supports **get document type**. Phase 4 supports **get document type version**. Phase 5 supports **get notifications**. Phase 6 supports **create EGS code usage**. Phase 7 supports **search my EGS code usage requests**. Phase 8 supports **request code reuse**. Phase 9 supports **get code details by item code**. Phase 10 supports **update code**. V1 also supports **submit documents**, **invoice JSON modules**, and **CAdES-BES signatures**.
 
 ## Install
 
@@ -208,6 +208,116 @@ result = client.update_code(
     linked_code="EG-674859545-9875",
 )
 print(result.success)
+```
+
+## Invoice documents
+
+Build typed invoice JSON (`to_json()`), sign it, then pass it to `submit_documents()`. Full walkthrough: [docs/invoices.md](docs/invoices.md).
+
+| Class | `documentType` |
+| --- | --- |
+| `Invoice` | `i` |
+| `CreditNote` | `c` |
+| `DebitNote` | `d` |
+| `ExportInvoice` | `ei` |
+| `ExportCreditNote` | `ec` |
+| `ExportDebitNote` | `ed` |
+
+```python
+from datetime import datetime, timezone
+from egypt_compliance import Address, Invoice, InvoiceLine, Issuer, Receiver, UnitValue
+
+invoice = Invoice(
+    issuer=Issuer(
+        id="100015840",
+        name="Issuer Co",
+        address=Address(
+            branch_id="0",
+            country="EG",
+            governate="Cairo",
+            region_city="Nasr City",
+            street="Street 1",
+            building_number="10",
+        ),
+    ),
+    receiver=Receiver(
+        type="B",
+        id="200015840",
+        name="Buyer Co",
+        address=Address(
+            country="EG",
+            governate="Giza",
+            region_city="Dokki",
+            street="Street 2",
+            building_number="17",
+        ),
+    ),
+    date_time_issued=datetime(2024, 2, 13, 13, 15, tzinfo=timezone.utc),
+    taxpayer_activity_code="4620",
+    internal_id="INV-1",
+    invoice_lines=[
+        InvoiceLine(
+            description="Bottle of water",
+            item_type="EGS",
+            item_code="EG-100015840-1",
+            unit_type="EA",
+            quantity=1,
+            unit_value=UnitValue(amount_egp=100),
+            sales_total=100,
+            total=114,
+            net_total=100,
+        )
+    ],
+    total_sales_amount=100,
+    net_amount=100,
+    total_amount=114,
+)
+payload = invoice.to_json()
+```
+
+`InvoiceFactory.create("invoice"|"credit_note"|"debit_note"|"export_invoice"|...)` builds the same models.
+
+## Sign documents
+
+Canonicalize invoice JSON and create a Base64 CAdES-BES value. Full walkthrough: [docs/signing.md](docs/signing.md).
+
+```python
+from egypt_compliance import SignatureFactory
+
+signer = SignatureFactory.create("pem", certificate="cert.pem", private_key="key.pem")
+# Production USB token:
+# signer = SignatureFactory.create("pkcs11", pin="12345678", library="eps2003csp11.dll")
+
+result = signer.sign_file("invoice.json")  # or signer.sign_document(invoice.to_json())
+print(result.canonical)
+print(result.signature)
+client.submit_documents(token, result.submission["documents"])
+```
+
+## Submit documents
+
+Requires a token from `login()` and signed document JSON (CAdES-BES). Calls `POST /api/v1.0/documentsubmissions`. HTTP **200** and **202** are both success.
+
+Build JSON with the invoice modules, sign with `SignatureFactory`, then submit. Walkthroughs: [docs/invoices.md](docs/invoices.md), [docs/signing.md](docs/signing.md), [docs/submit-documents.md](docs/submit-documents.md).
+
+```python
+result = client.submit_documents(
+    token,
+    [
+        {
+            "documentType": "i",
+            "documentTypeVersion": "1.0",
+            "internalID": "PZ-234-A",
+            "signatures": [{"type": "I", "value": "<cades-bes-base64>"}],
+            # issuer, receiver, invoiceLines, totals, ...
+        }
+    ],
+)
+print(result.submission_uuid)
+for accepted in result.accepted_documents:
+    print(accepted.internal_id, accepted.uuid, accepted.long_id)
+for rejected in result.rejected_documents:
+    print(rejected.internal_id, rejected.error.message)
 ```
 
 ## Environments

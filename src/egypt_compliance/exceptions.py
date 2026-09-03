@@ -36,3 +36,7 @@ class ETAAPIError(ETAError):
         self.target = target
         self.status_code = status_code
         self.details = details or []
+
+
+class ETASigningError(ETAError):
+    """Raised when document canonicalization or CAdES-BES signing fails."""

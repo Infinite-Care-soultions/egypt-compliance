@@ -12,6 +12,11 @@ from egypt_compliance.models.document_types import (
     DocumentTypesResult,
     DocumentTypeVersionDetail,
 )
+from egypt_compliance.models.documents import (
+    SubmitDocumentsRequest,
+    SubmitDocumentsResult,
+    SubmittedDocument,
+)
 from egypt_compliance.models.egs_codes import (
     CodeReuseItem,
     CreateEGSCodeUsageRequest,
@@ -325,6 +330,40 @@ class ETAClient:
             return UpdateCodeResult(success=True, payload=payload)
         return UpdateCodeResult(success=True)
 
+    def submit_documents(
+        self,
+        token: Token | str,
+        documents: list[SubmittedDocument | dict] | SubmitDocumentsRequest,
+        *,
+        accept_language: str = "en",
+    ) -> SubmitDocumentsResult:
+        if isinstance(documents, SubmitDocumentsRequest):
+            if not documents.documents:
+                raise ValueError("documents must contain at least one document")
+            body = documents.as_api_body()
+        else:
+            if not documents:
+                raise ValueError("documents must contain at least one document")
+            body = {
+                "documents": [
+                    document.model_dump(by_alias=True, exclude_none=True, mode="json")
+                    if isinstance(document, SubmittedDocument)
+                    else document
+                    for document in documents
+                ]
+            }
+        payload = self._request_json(
+            "POST",
+            self.config.document_submissions_url,
+            token=token,
+            accept_language=accept_language,
+            json=body,
+            ok_statuses=(200, 202),
+        )
+        if payload is None:
+            return SubmitDocumentsResult()
+        return SubmitDocumentsResult.model_validate(payload)
+
     def close(self) -> None:
         if self._owns_client and self._http is not None:
             self._http.close()
@@ -363,6 +402,7 @@ class ETAClient:
         accept_language: str = "en",
         params: dict[str, str] | None = None,
         json: object | None = None,
+        ok_statuses: tuple[int, ...] = (200,),
     ) -> object:
         access_token = token.access_token if isinstance(token, Token) else token
         headers = {
@@ -385,7 +425,7 @@ class ETAClient:
 
         if response.status_code == 401:
             raise self._authentication_error(response)
-        if response.status_code != 200:
+        if response.status_code not in ok_statuses:
             raise self._api_error(response)
         if not response.content:
             return None

@@ -24,6 +24,9 @@ classifiers = [
 dependencies = [
     "httpx>=0.27",
     "pydantic>=2",
+    "cryptography>=42",
+    "asn1crypto>=1.5",
+    "python-pkcs11>=0.7",
 ]
 
 [project.optional-dependencies]

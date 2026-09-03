@@ -1,13 +1,43 @@
 from egypt_compliance.client import ETAClient
 from egypt_compliance.config import Environment, ETAConfig
-from egypt_compliance.exceptions import ETAAPIError, ETAAuthenticationError, ETAError
+from egypt_compliance.exceptions import ETAAPIError, ETAAuthenticationError, ETAError, ETASigningError
 from egypt_compliance.factory import ETAClientFactory
+from egypt_compliance.invoices import (
+    Address,
+    CreditNote,
+    DebitNote,
+    Delivery,
+    Discount,
+    ExportCreditNote,
+    ExportDebitNote,
+    ExportInvoice,
+    Invoice,
+    InvoiceDocument,
+    InvoiceFactory,
+    InvoiceKind,
+    InvoiceLine,
+    Issuer,
+    Payment,
+    Receiver,
+    TaxableItem,
+    TaxTotal,
+    UnitValue,
+)
 from egypt_compliance.models.document_types import (
     DocumentType,
     DocumentTypesResult,
     DocumentTypeVersion,
     DocumentTypeVersionDetail,
     WorkflowParameter,
+)
+from egypt_compliance.models.documents import (
+    AcceptedDocument,
+    DocumentSignature,
+    RejectedDocument,
+    SubmissionError,
+    SubmitDocumentsRequest,
+    SubmitDocumentsResult,
+    SubmittedDocument,
 )
 from egypt_compliance.models.egs_codes import (
     CodeReuseItem,
@@ -35,15 +65,30 @@ from egypt_compliance.models.notifications import (
     PageMetadata,
 )
 from egypt_compliance.models.token import LoginCredentials, Token
+from egypt_compliance.signing import (
+    DocumentSigner,
+    SignatureFactory,
+    SignatureResult,
+    canonicalize,
+    canonicalize_each,
+)
 
 __all__ = [
+    "AcceptedDocument",
+    "Address",
     "CreateEGSCodeUsageRequest",
     "CreateEGSCodeUsageResult",
     "CodeReuseItem",
+    "CreditNote",
+    "DebitNote",
+    "Delivery",
     "DeliveryAttempt",
+    "Discount",
+    "DocumentSigner",
     "DocumentType",
     "DocumentTypeVersion",
     "DocumentTypeVersionDetail",
+    "DocumentSignature",
     "DocumentTypesResult",
     "ETAAPIError",
     "ETAAuthenticationError",
@@ -51,11 +96,21 @@ __all__ = [
     "ETAClientFactory",
     "ETAConfig",
     "ETAError",
+    "ETASigningError",
     "Environment",
     "EGSCodeUsageItem",
     "EGSCodeUsageRequestDetails",
     "EGSRequestStatus",
     "EGSRequestType",
+    "ExportCreditNote",
+    "ExportDebitNote",
+    "ExportInvoice",
+    "Invoice",
+    "InvoiceDocument",
+    "InvoiceFactory",
+    "InvoiceKind",
+    "InvoiceLine",
+    "Issuer",
     "LoginCredentials",
     "Notification",
     "NotificationQuery",
@@ -63,16 +118,30 @@ __all__ = [
     "NotificationsResult",
     "OrderDirection",
     "PageMetadata",
+    "Payment",
     "PublishedCodeDetails",
+    "RejectedDocument",
     "RequestCodeReuseRequest",
     "RequestCodeReuseResult",
+    "Receiver",
     "SearchEGSCodeUsageQuery",
     "SearchEGSCodeUsageResult",
+    "SignatureFactory",
+    "SignatureResult",
+    "SubmissionError",
+    "SubmitDocumentsRequest",
+    "SubmitDocumentsResult",
+    "SubmittedDocument",
+    "TaxableItem",
+    "TaxTotal",
     "Token",
+    "UnitValue",
     "UpdateCodeRequest",
     "UpdateCodeResult",
     "WorkflowParameter",
     "__version__",
+    "canonicalize",
+    "canonicalize_each",
 ]
 
 __version__ = "0.1.0"

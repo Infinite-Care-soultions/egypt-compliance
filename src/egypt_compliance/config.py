@@ -55,6 +55,10 @@ class ETAConfig(BaseModel):
     def update_code_url(self, code_type: str, item_code: str) -> str:
         return self.code_details_url(code_type, item_code)
 
+    @property
+    def document_submissions_url(self) -> str:
+        return self.api_url("/api/v1.0/documentsubmissions")
+
 
 PREPROD = ETAConfig(
     environment=Environment.PREPROD,

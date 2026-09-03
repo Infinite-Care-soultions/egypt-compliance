@@ -5,6 +5,15 @@ from egypt_compliance.models.document_types import (
     DocumentTypeVersionDetail,
     WorkflowParameter,
 )
+from egypt_compliance.models.documents import (
+    AcceptedDocument,
+    DocumentSignature,
+    RejectedDocument,
+    SubmissionError,
+    SubmitDocumentsRequest,
+    SubmitDocumentsResult,
+    SubmittedDocument,
+)
 from egypt_compliance.models.egs_codes import (
     CodeReuseItem,
     CreateEGSCodeUsageRequest,
@@ -33,6 +42,7 @@ from egypt_compliance.models.notifications import (
 from egypt_compliance.models.token import LoginCredentials, Token
 
 __all__ = [
+    "AcceptedDocument",
     "CodeReuseItem",
     "CreateEGSCodeUsageRequest",
     "CreateEGSCodeUsageResult",
@@ -40,6 +50,7 @@ __all__ = [
     "DocumentType",
     "DocumentTypeVersion",
     "DocumentTypeVersionDetail",
+    "DocumentSignature",
     "DocumentTypesResult",
     "EGSCodeUsageItem",
     "EGSCodeUsageRequestDetails",
@@ -53,10 +64,15 @@ __all__ = [
     "OrderDirection",
     "PageMetadata",
     "PublishedCodeDetails",
+    "RejectedDocument",
     "RequestCodeReuseRequest",
     "RequestCodeReuseResult",
     "SearchEGSCodeUsageQuery",
     "SearchEGSCodeUsageResult",
+    "SubmissionError",
+    "SubmitDocumentsRequest",
+    "SubmitDocumentsResult",
+    "SubmittedDocument",
     "Token",
     "UpdateCodeRequest",
     "UpdateCodeResult",
