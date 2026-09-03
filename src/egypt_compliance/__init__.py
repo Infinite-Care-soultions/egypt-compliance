@@ -24,8 +24,12 @@ from egypt_compliance.invoices import (
     UnitValue,
 )
 from egypt_compliance.models.document_packages import (
+    DocumentPackageInformation,
     DocumentPackageItemCode,
     DocumentPackageQueryParameters,
+    PackageRequestsMetadata,
+    PackageRequestsQuery,
+    PackageRequestsResult,
     RequestDocumentPackageRequest,
     RequestDocumentPackageResult,
 )
@@ -108,6 +112,7 @@ __all__ = [
     "Delivery",
     "DeliveryAttempt",
     "Discount",
+    "DocumentPackageInformation",
     "DocumentPackageItemCode",
     "DocumentPackageQueryParameters",
     "DocumentSigner",
@@ -145,6 +150,9 @@ __all__ = [
     "NotificationType",
     "NotificationsResult",
     "OrderDirection",
+    "PackageRequestsMetadata",
+    "PackageRequestsQuery",
+    "PackageRequestsResult",
     "PageMetadata",
     "Payment",
     "PublishedCodeDetails",

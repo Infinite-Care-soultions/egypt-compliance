@@ -1,6 +1,10 @@
 from egypt_compliance.models.document_packages import (
+    DocumentPackageInformation,
     DocumentPackageItemCode,
     DocumentPackageQueryParameters,
+    PackageRequestsMetadata,
+    PackageRequestsQuery,
+    PackageRequestsResult,
     RequestDocumentPackageRequest,
     RequestDocumentPackageResult,
 )
@@ -71,6 +75,7 @@ __all__ = [
     "CreateEGSCodeUsageRequest",
     "CreateEGSCodeUsageResult",
     "DeliveryAttempt",
+    "DocumentPackageInformation",
     "DocumentPackageItemCode",
     "DocumentPackageQueryParameters",
     "DocumentType",
@@ -90,6 +95,9 @@ __all__ = [
     "NotificationType",
     "NotificationsResult",
     "OrderDirection",
+    "PackageRequestsMetadata",
+    "PackageRequestsQuery",
+    "PackageRequestsResult",
     "PageMetadata",
     "PublishedCodeDetails",
     "RejectDocumentRequest",

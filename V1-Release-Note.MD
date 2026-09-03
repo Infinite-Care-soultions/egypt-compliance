@@ -78,3 +78,11 @@ phase 10
 Get Document Package
 refrence link :
 https://sdk.invoicing.eta.gov.eg/einvoicingapi/07-get-document-package/
+After finish phase 10  create usage documentation
+
+
+phase 11 
+Get Document 
+refrence link :
+https://sdk.invoicing.eta.gov.eg/einvoicingapi/08-get-document/
+After finish phase 11  create usage documentation

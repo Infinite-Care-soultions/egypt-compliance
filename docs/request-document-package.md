@@ -1,6 +1,6 @@
 # Request document package
 
-Ask ETA to prepare a downloadable package of invoices you sent or received. The job is **asynchronous**: this call returns a `packageId`. Later APIs list request status and download the file.
+Ask ETA to prepare a downloadable package of invoices you sent or received. The job is **asynchronous**: this call returns a `packageId`. Poll status with [`get_package_requests()`](package-requests.md). A later API downloads the file.
 
 Official API: [Request Document Package](https://sdk.invoicing.eta.gov.eg/einvoicingapi/05-request-document-package/)
 

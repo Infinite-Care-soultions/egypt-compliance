@@ -10,6 +10,8 @@ from egypt_compliance.exceptions import ETAAPIError, ETAAuthenticationError, ETA
 from egypt_compliance.models.document_packages import (
     DocumentPackageItemCode,
     DocumentPackageQueryParameters,
+    PackageRequestsQuery,
+    PackageRequestsResult,
     RequestDocumentPackageRequest,
     RequestDocumentPackageResult,
 )
@@ -609,6 +611,29 @@ class ETAClient:
                     return RequestDocumentPackageResult(package_id=inner)
             return RequestDocumentPackageResult.model_validate(payload)
         return RequestDocumentPackageResult()
+
+    def get_package_requests(
+        self,
+        token: Token | str,
+        query: PackageRequestsQuery | None = None,
+        *,
+        page_no: int | None = None,
+        page_size: int | None = None,
+        accept_language: str = "en",
+    ) -> PackageRequestsResult:
+        filters = query or PackageRequestsQuery(page_no=page_no, page_size=page_size)
+        payload = self._request_json(
+            "GET",
+            self.config.document_package_requests_url,
+            token=token,
+            accept_language=accept_language,
+            params=filters.as_query_params(),
+        )
+        if payload is None:
+            payload = {"result": []}
+        if isinstance(payload, list):
+            payload = {"result": payload}
+        return PackageRequestsResult.model_validate(payload)
 
     def close(self) -> None:
         if self._owns_client and self._http is not None:
