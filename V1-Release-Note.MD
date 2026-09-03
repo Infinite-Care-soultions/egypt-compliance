@@ -86,3 +86,24 @@ Get Document
 refrence link :
 https://sdk.invoicing.eta.gov.eg/einvoicingapi/08-get-document/
 After finish phase 11  create usage documentation
+
+
+phase 12 
+Get Submission
+refrence link :
+https://sdk.invoicing.eta.gov.eg/einvoicingapi/09-get-submission/
+After finish phase 12  create usage documentation
+
+phase 13 
+Get Document Printout
+refrence link :
+https://sdk.invoicing.eta.gov.eg/einvoicingapi/10-get-document-printout/
+After finish phase 13  create usage documentation
+
+phase 14 
+Get Document Details
+refrence link :
+https://sdk.invoicing.eta.gov.eg/einvoicingapi/11-get-document-details/
+After finish phase 14  create usage documentation
+
+

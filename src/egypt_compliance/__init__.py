@@ -23,6 +23,12 @@ from egypt_compliance.invoices import (
     TaxTotal,
     UnitValue,
 )
+from egypt_compliance.models.document_detail import (
+    AdditionalMetadata,
+    DocumentExtended,
+    DocumentValidationResults,
+    ValidationStepResult,
+)
 from egypt_compliance.models.document_packages import (
     DocumentPackageDownload,
     DocumentPackageInformation,
@@ -102,6 +108,7 @@ from egypt_compliance.signing import (
 
 __all__ = [
     "AcceptedDocument",
+    "AdditionalMetadata",
     "Address",
     "CancelDocumentRequest",
     "CancelDocumentResult",
@@ -124,6 +131,8 @@ __all__ = [
     "DocumentTypeVersionDetail",
     "DocumentSignature",
     "DocumentTypesResult",
+    "DocumentValidationResults",
+    "DocumentExtended",
     "ETAAPIError",
     "ETAAuthenticationError",
     "ETAClient",
@@ -186,6 +195,7 @@ __all__ = [
     "UnitValue",
     "UpdateCodeRequest",
     "UpdateCodeResult",
+    "ValidationStepResult",
     "WorkflowParameter",
     "__version__",
     "canonicalize",

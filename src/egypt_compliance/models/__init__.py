@@ -1,3 +1,9 @@
+from egypt_compliance.models.document_detail import (
+    AdditionalMetadata,
+    DocumentExtended,
+    DocumentValidationResults,
+    ValidationStepResult,
+)
 from egypt_compliance.models.document_packages import (
     DocumentPackageDownload,
     DocumentPackageInformation,
@@ -70,6 +76,7 @@ from egypt_compliance.models.token import LoginCredentials, Token
 
 __all__ = [
     "AcceptedDocument",
+    "AdditionalMetadata",
     "CancelDocumentRequest",
     "CancelDocumentResult",
     "CodeReuseItem",
@@ -86,6 +93,8 @@ __all__ = [
     "DocumentSignature",
     "DocumentSummary",
     "DocumentTypesResult",
+    "DocumentValidationResults",
+    "DocumentExtended",
     "EGSCodeUsageItem",
     "EGSCodeUsageRequestDetails",
     "EGSRequestStatus",
@@ -124,5 +133,6 @@ __all__ = [
     "Token",
     "UpdateCodeRequest",
     "UpdateCodeResult",
+    "ValidationStepResult",
     "WorkflowParameter",
 ]
